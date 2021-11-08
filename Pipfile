@@ -10,9 +10,10 @@ name = "pytorch"
 
 [packages]
 smart-stock = {editable = true, path = "."}
+ipython = "*"
+matplotlib = "*"
 
 [dev-packages]
-matplotlib = "*"
 
 [requires]
 python_version = "3.9"
