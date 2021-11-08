@@ -9,9 +9,8 @@ verify_ssl = false
 name = "pytorch"
 
 [packages]
-smart-stock = {editable = true, path = "."}
 ipython = "*"
-matplotlib = "*"
+smart-stock = {editable = true, path = "."}
 
 [dev-packages]
 

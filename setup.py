@@ -25,6 +25,12 @@ setup(
     description='SmartStock Reinforcement Learning',
     long_description=get_description(),
     install_requires=get_install_requires(),
+    extras_require={
+        'test': [
+            'pytest',
+            'stable-baselines3',
+        ],
+    },
     author='Alexander DeRieux',
     author_email='alexander.derieux@gmail.com',
     url='https://github.com/zanderman/smart-stock-rl',
