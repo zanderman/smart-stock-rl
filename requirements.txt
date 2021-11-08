@@ -1,3 +1,5 @@
 gym
 numpy
+matplotlib
 pandas
+torch
