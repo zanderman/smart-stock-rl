@@ -94,11 +94,31 @@ class StockEnv(gym.Env):
         return [seed]
 
 
+    def _action_buy(self, 
+        stock_price: float, 
+        action_percent_amount: float,
+        ):
+
+        # Total number of shares the agent can purchase.
+        total_possible_shares = int(self.balance / stock_price)
+
+        # Amount of shares the agent purchases given
+        # their percentage amount.
+        bought_shares = int(total_possible_shares * action_percent_amount)
+
+        # Compute total purchase cost and cost basis for tax purposes.
+        cost = bought_shares * stock_price
+        self.cost_basis = (cost + self.cost_basis*self.shares)/(self.shares + bought_shares)
+
+        # Update number of shares held.
+        self.shares += bought_shares
+
+
     def _perform_action(self, action):
 
         # Set current stock price at a random value 
         # between the start and end price for the day.
-        purchase_price = self.np_random.uniform(
+        stock_price = self.np_random.uniform(
             low=self.df['Open'].iloc[self.current_step],
             high=self.df['Close'].iloc[self.current_step],
         )
@@ -108,21 +128,7 @@ class StockEnv(gym.Env):
         action_percent_amount = action[1]
 
         if action_type == ActionType.BUY:
-
-            # Total number of shares the agent can purchase.
-            total_possible_shares = int(self.balance / purchase_price)
-
-            # Amount of shares the agent purchases given
-            # their percentage amount.
-            bought_shares = int(total_possible_shares * action_percent_amount)
-
-            # Compute total purchase cost and cost basis for tax purposes.
-            cost = bought_shares * purchase_price
-            self.cost_basis = (cost + self.cost_basis*self.shares)/(self.shares + bought_shares)
-
-            # Update number of shares held.
-            self.shares += bought_shares
-
+            self._action_buy(stock_price, action_percent_amount)
 
         elif action_type == ActionType.SELL:
             pass
