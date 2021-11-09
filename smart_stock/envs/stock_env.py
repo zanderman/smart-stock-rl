@@ -99,6 +99,7 @@ class StockEnv(gym.Env):
 
 
     def seed(self, seed=None):
+        self.action_space.seed(seed)
         self.np_random, seed = gym.utils.seeding.np_random(seed)
         return [seed]
 
