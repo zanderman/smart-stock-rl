@@ -1,3 +1,4 @@
+import enum
 import gym
 import gym.spaces
 import gym.utils.seeding
@@ -8,6 +9,12 @@ from pandas import DataFrame
 # https://github.com/openai/gym/blob/master/gym/envs/classic_control/cartpole.py
 
 # Idea: environment for live market interaction.
+
+class ActionType(enum.Enum):
+    BUY = 0
+    SELL = 1
+    HOLD = 2
+
 
 class StockEnv(gym.Env):
     """Stock Environment.
@@ -62,6 +69,7 @@ class StockEnv(gym.Env):
 
         # Initial reset parameters.
         self._history = history
+        self._data_window = self._history + 1
         self._start_balance = start_balance
 
         self.df = df
@@ -80,15 +88,73 @@ class StockEnv(gym.Env):
         # Seed the environment.
         self.seed()
 
+
     def seed(self, seed=None):
         self.np_random, seed = gym.utils.seeding.np_random(seed)
         return [seed]
 
+
+    def _perform_action(self, action):
+
+        # Set current stock price at a random value 
+        # between the start and end price for the day.
+        purchase_price = self.np_random.uniform(
+            low=self.df['Open'].iloc[self.current_step],
+            high=self.df['Close'].iloc[self.current_step],
+        )
+
+        # Split the action into type and percentage amount.
+        action_type = ActionType(int(action[0]))
+        action_percent_amount = action[1]
+
+        if action_type == ActionType.BUY:
+
+            # Total number of shares the agent can purchase.
+            total_possible_shares = int(self.balance / purchase_price)
+
+            # Amount of shares the agent purchases given
+            # their percentage amount.
+            bought_shares = int(total_possible_shares * action_percent_amount)
+
+            # Compute total purchase cost and cost basis for tax purposes.
+            cost = bought_shares * purchase_price
+            self.cost_basis = (cost + self.cost_basis*self.shares)/(self.shares + bought_shares)
+
+            # Update number of shares held.
+            self.shares += bought_shares
+
+
+        elif action_type == ActionType.SELL:
+            pass
+
+        elif action_type == ActionType.HOLD:
+            pass
+
+
     def step(self, action):
-        pass
+
+        # Increment the step index.
+        self.current_step += 1
+
+        # If the step index has exceeded the data frame, then we're done.
+        done = False
+        if self.current_step >= len(self.df.index) - self._data_window:
+            done = True
+
 
     def reset(self):
-        self.balance = self._start_balance
+        self.balance = self._start_balance # Current account balance (i.e., spending money).
+        self.shares = 0 # Current number of shares.
+        self.cost_basis = 0 # Original value of asset for tax purposes.
+
+        # Randomly initialize the step to be a point within the data frame.
+        self.current_step = self.np_random.randint(
+            low=0,
+            high=len(self.df.index)-self._data_window,
+            )
+
 
     def render(self, mode: str = 'human'):
+        # Ideas for rendering:
+        # - https://github.com/notadamking/Stock-Trading-Visualization/blob/master/render/StockTradingGraph.py
         pass
