@@ -119,7 +119,8 @@ class StockEnv(gym.Env):
         # Compute total purchase cost and cost basis for tax purposes.
         cost = bought_shares * stock_price
         self.balance -= cost
-        self.cost_basis = (cost + self.cost_basis*self.shares)/(self.shares + bought_shares)
+        if self.shares + bought_shares > 0:
+            self.cost_basis = (cost + self.cost_basis*self.shares)/(self.shares + bought_shares)
 
         # Update number of shares held.
         self.shares += bought_shares
