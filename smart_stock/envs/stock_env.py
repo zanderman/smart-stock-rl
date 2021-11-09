@@ -63,14 +63,23 @@ class StockEnv(gym.Env):
     def __init__(self, 
         df: DataFrame,
         start_balance: float,
-        history: int = 5, 
+        history: int = 5,
+        max_steps: int = None,
     ):
-        super.__init__()
+        super().__init__()
+
+        # Ensure that the length of the data is longer than the provided window.
+        if len(df.index) <= history+1:
+            raise ValueError('not enough data for history window size')
 
         # Initial reset parameters.
         self._history = history
         self._data_window = self._history + 1
         self._start_balance = start_balance
+        if max_steps is None:
+            self._max_steps = len(df.index)
+        else:
+            self._max_steps = max_steps
 
         self.df = df
         self.action_space = gym.spaces.Box(
@@ -156,6 +165,9 @@ class StockEnv(gym.Env):
         elif action_type == ActionType.HOLD:
             pass
 
+        # Update current net worth.
+        self.net_worth = self.balance + (self.shares * stock_price)
+
 
     def _get_observation(self):
 
@@ -167,6 +179,9 @@ class StockEnv(gym.Env):
 
     def step(self, action):
 
+        # Take the given action.
+        self._perform_action(action)
+
         # Increment the step index.
         self.current_step += 1
 
@@ -175,11 +190,27 @@ class StockEnv(gym.Env):
         if self.current_step >= len(self.df.index) - self._data_window:
             done = True
 
+        # Agent has run out of money.
+        if self.balance <= 0:
+            done = True
+
+        # Compute reward.
+        # Reward is the current balance multiplied by
+        # a fraction of the current step given the maximum
+        # number of steps possible.
+        reward = self.balance * (self.current_step / self._max_steps)
+
+        # Get next observation.
+        obs = self._get_observation()
+
+        return obs, reward, done, {}
+
 
     def reset(self):
         self.balance = self._start_balance # Current account balance (i.e., spending money).
         self.shares = 0 # Current number of shares.
         self.cost_basis = 0 # Original value of asset for tax purposes.
+        self.net_worth = 0
 
         # Randomly initialize the step to be a point within the data frame.
         self.current_step = self.np_random.randint(
@@ -187,8 +218,14 @@ class StockEnv(gym.Env):
             high=len(self.df.index)-self._data_window,
             )
 
+        # Get initial observation and return.
+        obs = self._get_observation()
+        return obs
+
 
     def render(self, mode: str = 'human'):
         # Ideas for rendering:
         # - https://github.com/notadamking/Stock-Trading-Visualization/blob/master/render/StockTradingGraph.py
-        pass
+
+        items = [self.current_step, self.balance, self.shares, self.net_worth, self.cost_basis]
+        print(','.join(str(x) for x in items))
