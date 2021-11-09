@@ -157,6 +157,14 @@ class StockEnv(gym.Env):
             pass
 
 
+    def _get_observation(self):
+
+        # Get necessary rows of data frame as numpy matrix.
+        obs = self.df[['Open','High','Low','Close','Volume']].iloc[self.current_step:self.current_step+self._data_window].to_numpy()
+
+        return obs
+
+
     def step(self, action):
 
         # Increment the step index.
