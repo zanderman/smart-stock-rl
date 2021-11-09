@@ -108,10 +108,26 @@ class StockEnv(gym.Env):
 
         # Compute total purchase cost and cost basis for tax purposes.
         cost = bought_shares * stock_price
+        self.balance -= cost
         self.cost_basis = (cost + self.cost_basis*self.shares)/(self.shares + bought_shares)
 
         # Update number of shares held.
         self.shares += bought_shares
+
+
+    def _action_sell(self, 
+        stock_price: float, 
+        action_percent_amount: float,
+        ):
+
+        # Number of shares to be sold.
+        sold_shares = int(self.shares * action_percent_amount)
+
+        # Compute sale price and update balance.
+        self.balance += sold_shares * stock_price
+
+        # Update current shares.
+        self.shares -= sold_shares
 
 
     def _perform_action(self, action):
@@ -127,12 +143,16 @@ class StockEnv(gym.Env):
         action_type = ActionType(int(action[0]))
         action_percent_amount = action[1]
 
+        # Perform buy action.
         if action_type == ActionType.BUY:
             self._action_buy(stock_price, action_percent_amount)
 
+        # Perform sell action.
         elif action_type == ActionType.SELL:
-            pass
+            self._action_sell(stock_price, action_percent_amount)
 
+        # Perform hold action.
+        # This is most likely "do nothing".
         elif action_type == ActionType.HOLD:
             pass
 
