@@ -90,7 +90,7 @@ class StockEnv(gym.Env):
         self.observation_space = gym.spaces.Box(
             low=0.,
             high=np.finfo(np.float32).max,
-            shape=(5,history,),
+            shape=(self._data_window,5,),
             dtype=np.float32,
         )
 
