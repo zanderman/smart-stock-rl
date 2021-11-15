@@ -1,1 +1,1 @@
-from . import envs, datasets
+from . import envs, datasets, algorithms
