@@ -16,15 +16,22 @@ class ActionType(enum.Enum):
     HOLD = 2
 
 
+class RenderMode(enum.Enum):
+    ASCII = 'ascii'
+    CSV = 'csv'
+
+
 class StockEnv(gym.Env):
     """Stock Environment.
-    
+
     This environment mimics the behavior of a stock using
     its historical data. Data must be provided in a pandas
     dataframe using proper headers.
 
     An optional history parameter can be given to control
     the number of days of data to include at once.
+
+    Inspired by: https://github.com/notadamking/Stock-Trading-Environment
 
     Observation:
         Type: Box(5,<history>)
@@ -59,6 +66,10 @@ class StockEnv(gym.Env):
         The first row must be a header with the same names as above.
         Every subsequent row must contain the desired data.
     """
+    metadata = {'render.modes': [RenderMode.ASCII, RenderMode.CSV]}
+
+    # Static list of header column names to use for each observation.
+    _df_obs_cols = ['Open','High','Low','Close','Volume']
 
     def __init__(self, 
         df: DataFrame,
@@ -174,7 +185,7 @@ class StockEnv(gym.Env):
     def _get_observation(self):
 
         # Get necessary rows of data frame as numpy matrix.
-        obs = self.df[['Open','High','Low','Close','Volume']].iloc[self.current_step:self.current_step+self._data_window].to_numpy()
+        obs = self.df[self._df_obs_cols].iloc[self.current_step:self.current_step+self._data_window].to_numpy()
 
         return obs
 
@@ -225,9 +236,21 @@ class StockEnv(gym.Env):
         return obs
 
 
-    def render(self, mode: str = 'human'):
+    def render(self, mode: str = 'ascii'):
         # Ideas for rendering:
         # - https://github.com/notadamking/Stock-Trading-Visualization/blob/master/render/StockTradingGraph.py
 
-        items = [self.current_step, self.balance, self.shares, self.net_worth, self.cost_basis]
-        print(','.join(str(x) for x in items))
+        # Convert render mode string into enum (enforces validation too).
+        mode = RenderMode(mode)
+
+        # Human readable text.
+        if mode == RenderMode.ASCII:
+            print(f"[{self.current_step}] Balance: {self.balance}")
+            print(f"[{self.current_step}] Shares: {self.shares}")
+            print(f"[{self.current_step}] Net Worth: {self.net_worth}")
+            print(f"[{self.current_step}] Cost Basis: {self.cost_basis}")
+
+        # CSV format.
+        elif mode == RenderMode.CSV:
+            items = [self.current_step, self.balance, self.shares, self.net_worth, self.cost_basis]
+            print(','.join(str(x) for x in items))
