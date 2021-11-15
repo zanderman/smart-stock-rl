@@ -1,4 +1,5 @@
 import enum
+from typing import Tuple
 import gym
 import gym.spaces
 import gym.utils.seeding
@@ -162,8 +163,7 @@ class StockEnv(gym.Env):
         )
 
         # Split the action into type and percentage amount.
-        action_type = ActionType(int(action[0]))
-        action_percent_amount = action[1]
+        action_type, action_percent_amount = self.parse_action(action)
 
         # Perform buy action.
         if action_type == ActionType.BUY:
@@ -188,6 +188,13 @@ class StockEnv(gym.Env):
         obs = self.df[self._df_obs_cols].iloc[self.current_step:self.current_step+self._data_window].to_numpy()
 
         return obs
+
+
+    def parse_action(self, action) -> Tuple[ActionType, float]:
+        """Splits an action into type and percentage amount."""
+        action_type = ActionType(int(action[0]))
+        action_percent_amount = action[1]
+        return action_type, action_percent_amount
 
 
     def step(self, action):
