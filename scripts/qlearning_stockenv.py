@@ -18,7 +18,8 @@ def train(
     env: gym.Env,
     max_episodes: int = 1000,
     max_steps: int = None,
-    render: bool = False
+    render: bool = False,
+    render_mode: str = None,
     ) -> Tuple[List[float], bool]:
 
     # List of reward values for plotting.
@@ -29,7 +30,7 @@ def train(
 
     # Episode loop.
     for i in range(max_episodes):
-        reward = algo.run_episode(max_steps=max_steps, render=render)
+        reward = algo.run_episode(max_steps=max_steps, render=render, render_mode=render_mode)
         rewards.append(reward)
         # if i%100 == 0: print(f'[{i}] {reward}')
         print(f'[{i}] {reward}')
@@ -49,8 +50,9 @@ def main():
     # Create stock environment using specific stock.
     df = dataset['aapl']
     start_balance = 100
-    max_stock = 100
+    max_stock = 1 # 100
     start_day = None
+    env_name = 'StockDataEnv'
     env = ss.envs.StockDataEnv(
         df=df, 
         start_balance=start_balance, 
@@ -67,11 +69,12 @@ def main():
 
     # Set tweakable parameters.
     gamma = 0.9 # Discount factor (should be in (0,1)).
-    alpha = 0.01 # Step size.
+    alpha = 0.0001 # Step size.
     epsilon = 0.2 # Epsilon-greedy action selection (should be in (0,1)).
-    max_episodes = 10 # 1000 # Upper-limit on number of possible episodes.
-    max_steps = 100
-    render = False
+    max_episodes = 50 # 1000 # Upper-limit on number of possible episodes.
+    max_steps = 50
+    render = True
+    render_mode = 'csv'
 
     # Initialize linear function approximator by clipping low/high observation range.
     order = 3
@@ -103,12 +106,14 @@ def main():
     agent = ss.algorithms.qlearning.Q_SFM(env, lfa, gamma, alpha, epsilon)
 
     # Train the agent 
-    rewards, found_soln = train(agent, env, max_episodes, max_steps, render)
+    rewards, found_soln = train(agent, env, max_episodes, max_steps, render, render_mode)
 
     # Plot the rewards.
     plt.figure()
     plt.plot(rewards)
-    plt.legend()
+    plt.title(f"Sum of Reward per Episode\nQ-Learning with LFA using Fourier Basis in {env_name} Environment\n$n={order}$, $d={obs_low.size}$, funcs={lfa.coeffs.shape[0]}, $\gamma={gamma}$, $\\alpha={alpha}$, $\epsilon={epsilon}$")
+    plt.xlabel('Episode')
+    plt.ylabel('Sum of Reward')
     plt.tight_layout()
     plt.show()
 
