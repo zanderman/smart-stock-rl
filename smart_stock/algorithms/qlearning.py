@@ -109,7 +109,7 @@ class Q_SFM:
         return next_state, reward, done
 
 
-    def run_episode(self, max_steps: int = None, render: bool = False):
+    def run_episode(self, max_steps: int = None, render: bool = False, render_mode: str = None):
 
         # Reset the environment and get starting state.
         curr_state = self.env.reset()
@@ -119,7 +119,7 @@ class Q_SFM:
         while True:
 
             # Render the environment if requested.
-            if render: self.env.render()
+            if render: self.env.render(mode=render_mode)
 
             # Step the algorithm through the current state and retreive
             # the Q-matrix, next state, and the termination flag.
