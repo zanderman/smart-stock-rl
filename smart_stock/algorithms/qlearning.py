@@ -21,10 +21,22 @@ class Q_SFM:
         self.alpha = alpha
         self.epsilon = epsilon
 
-        # Generate discrete action list based on action space type.
+        # Generate discrete action list based on integer Box space.
         if type(env.action_space) == gym.spaces.Box:
+
+            # Validate action space data type and limits.
+            if env.action_space.dtype != int:
+                raise TypeError('only integer action space is supported')
+            elif env.action_space.high >= np.iinfo(env.action_space.dtype).max:
+                raise TypeError('action space upper limit must be finite')
+            elif env.action_space.low <= np.iinfo(env.action_space.dtype).min:
+                raise TypeError('action space lower limit must be finite')
+
+            # Get action space limits.
             actions_low = env.action_space.low
             actions_high = env.action_space.high
+
+        # Generate discrete action list based on Discrete space.
         if type(env.action_space) == gym.spaces.Discrete:
             actions_low = 0
             actions_high = env.action_space.n
