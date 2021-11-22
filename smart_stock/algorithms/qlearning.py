@@ -82,7 +82,21 @@ class Q_SFM:
             action = self.env.action_space.sample()
             action = np.array(action).flatten()[0] # Handle random sampling from 1D Box space.
         else:
-            action_index = np.argmax([self.q_value(curr_state, self.index2action(ai)) for ai in range(self.action_count)])
+            # q = [(self.index2action(ai), ai, self.q_value(curr_state, self.index2action(ai))) for ai in range(self.action_count)]
+            # print('Q:',q)
+
+            # Compute Q values.
+            q = [self.q_value(curr_state, self.index2action(ai)) for ai in range(self.action_count)]
+
+            # Get index of all maximum Q values.
+            max_q_idxs = np.where(np.isclose(q, np.max(q)))[0]
+
+            # Randomly select a maximum to prevent always selecting first instance.
+            action_index = np.random.choice(max_q_idxs)
+
+            # OLD IMPLEMENTATION OF SELECTING FIRST MAX.
+            # action_index = np.argmax([self.q_value(curr_state, self.index2action(ai)) for ai in range(self.action_count)])
+
             action = self.index2action(action_index) # Convert index to action value.
 
         # Take selected action and get information from environment.
