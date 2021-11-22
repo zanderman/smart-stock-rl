@@ -23,11 +23,20 @@ class FourierStateFeatureMapping(StateFeatureMapping):
         self.coeffs = np.array([list(map(int,x)) for x in iter])
         self.n_features = self.coeffs.shape[0]
 
+    def normalize(self, state: np.ndarray):
+        # Scale the observation.
+        out = (state - self.low)/(self.high - self.low)
+
+        # Flatten the observation so that it is 1D.
+        out = out.flatten()
+
+        return out
+
     def __call__(self, state: np.ndarray):
         """Compute approximation for given observation."""
 
         # Scale the observation.
-        scaled = (state - self.low)/(self.high - self.low)
+        scaled = self.normalize(state)
 
         # Compute approximation using Fourier basis functions.
         return np.cos(np.pi * np.dot(self.coeffs, scaled))
