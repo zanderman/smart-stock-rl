@@ -22,8 +22,8 @@ class RenderMode(enum.Enum):
     CSV = 'csv'
 
 
-class StockEnv(gym.Env):
-    """Stock Environment.
+class StockDataHistoryEnv(gym.Env):
+    """Stock Environment with dataframe input and historic state observations.
 
     This environment mimics the behavior of a stock using
     its historical data. Data must be provided in a pandas
