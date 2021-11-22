@@ -29,22 +29,21 @@ class StockDataEnv(gym.Env):
     its historical data for training/evaluation. Data must be provided in a pandas dataframe using proper headers.
 
     Observation:
-        Type: Box(5,<history>)
-        Num     Observation     Min     Max
-        0       Open            0.       Inf
-        1       High            0.       Inf
-        2       Low             0.       Inf
-        3       Close           0.       Inf
-        4       Volume          0.       Inf
+        Type: Box(7, float)
+        Num     Observation     Min      Max
+        0       Balance         -Inf     Inf
+        1       Shares          0.       Inf
+        2       Open            0.       Inf
+        3       High            0.       Inf
+        4       Low             0.       Inf
+        5       Close           0.       Inf
+        6       Volume          0.       Inf
 
     Actions:
-        Type: Box(2)
-        Num     Action                              Min     Max
-        0       Action Selection                    0.      3.
-                    < 1 = buy
-                    < 2 = sell
-                    hold otherwise
-        1       Percentage of stock to buy/sell     0.      1.
+        Type: Box(1, int)
+        Num     Action                                      Min     Max
+        0       Integer number of stocks to buy/sell/hold   -k      k
+                Hold = 0, Buy > 0, Sell < 0
 
     Reward:
         pass
@@ -69,6 +68,7 @@ class StockDataEnv(gym.Env):
     def __init__(self, 
         df: DataFrame,
         start_balance: float,
+        max_stock: int = 100,
         max_steps: int = None,
         start_day: int = None,
     ):
@@ -87,16 +87,16 @@ class StockDataEnv(gym.Env):
 
         # Define action space.
         self.action_space = gym.spaces.Box(
-            low=np.array([0., 0.]),
-            high=np.array([3., 1.]),
-            dtype=np.float32,
+            low=-max_stock,
+            high=max_stock,
+            dtype=np.int64,
         )
 
         # Define state space.
         self.observation_space = gym.spaces.Box(
-            low=0.,
+            low=np.finfo(np.float32).min,
             high=np.finfo(np.float32).max,
-            shape=(self._data_window,5,),
+            shape=(1,7,),
             dtype=np.float32,
         )
 
