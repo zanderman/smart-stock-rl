@@ -32,12 +32,13 @@ class StockDataEnv(gym.Env):
         Type: Box(7, float)
         Num     Observation     Min      Max
         0       Balance         -Inf     Inf
-        1       Shares          0.       Inf
-        2       Open            0.       Inf
-        3       High            0.       Inf
-        4       Low             0.       Inf
-        5       Close           0.       Inf
-        6       Volume          0.       Inf
+        1       Net worth       -Inf     Inf
+        2       Shares          0.       Inf
+        3       Open            0.       Inf
+        4       High            0.       Inf
+        5       Low             0.       Inf
+        6       Close           0.       Inf
+        7       Volume          0.       Inf
 
     Actions:
         Type: Box(1, int)
@@ -86,9 +87,11 @@ class StockDataEnv(gym.Env):
         self.df = df
 
         # Define action space.
+        self._max_stock = max_stock
         self.action_space = gym.spaces.Box(
             low=-max_stock,
             high=max_stock,
+            shape=(1,),
             dtype=np.int64,
         )
 
@@ -96,7 +99,7 @@ class StockDataEnv(gym.Env):
         self.observation_space = gym.spaces.Box(
             low=np.finfo(np.float32).min,
             high=np.finfo(np.float32).max,
-            shape=(1,7,),
+            shape=(8,),
             dtype=np.float32,
         )
 
@@ -179,7 +182,14 @@ class StockDataEnv(gym.Env):
     def _get_observation(self):
 
         # Get necessary rows of data frame as numpy matrix.
-        obs = self.df[self._df_obs_cols].iloc[self.current_step:self.current_step+self._data_window].to_numpy()
+        obs = self.df[self._df_obs_cols].iloc[self.current_step].to_numpy()
+
+        # Prepend agent-specific observations.
+        # Adds:
+        # - Balance
+        # - Net worth
+        # - Shares
+        obs = np.concatenate(([self.balance, self.net_worth, self.shares], obs))
 
         return obs
 
@@ -201,7 +211,7 @@ class StockDataEnv(gym.Env):
 
         # If the step index has exceeded the data frame, then we're done.
         done = False
-        if self.current_step >= len(self.df.index) - self._data_window:
+        if self.current_step >= len(self.df.index):
             done = True
 
         # Agent has run out of money.
@@ -230,7 +240,7 @@ class StockDataEnv(gym.Env):
         if self._start_day is None:
             self.current_step = self.np_random.randint(
                 low=0,
-                high=len(self.df.index)-self._data_window,
+                high=len(self.df.index)-1,
                 )
         else:
             self.current_step = self._start_day
