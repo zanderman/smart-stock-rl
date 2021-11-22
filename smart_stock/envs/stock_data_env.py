@@ -183,13 +183,6 @@ class StockDataEnv(gym.Env):
         return obs
 
 
-    def parse_action(self, action) -> Tuple[ActionType, float]:
-        """Splits an action into type and percentage amount."""
-        action_type = ActionType(int(action[0]))
-        action_percent_amount = action[1]
-        return action_type, action_percent_amount
-
-
     def step(self, action):
 
         # Take the given action.
