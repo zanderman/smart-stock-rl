@@ -70,9 +70,10 @@ class StockDataEnv(gym.Env):
     ):
         super().__init__()
 
-        # # Initial reset parameters.
-        # self._start_day = start_day
-        # self._start_balance = start_balance
+        # Initial reset parameters.
+        self._start_day = start_day
+        self._start_balance = start_balance
+
         # if max_steps is None:
         #     self._max_steps = len(df.index)
         # else:
