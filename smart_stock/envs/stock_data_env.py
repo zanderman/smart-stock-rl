@@ -114,40 +114,30 @@ class StockDataEnv(gym.Env):
 
 
     def _action_buy(self, 
-        stock_price: float, 
-        action_percent_amount: float,
+        shares: int,
+        stock_price: float,
         ):
 
-        # Total number of shares the agent can purchase.
-        total_possible_shares = int(self.balance / stock_price)
-
-        # Amount of shares the agent purchases given
-        # their percentage amount.
-        bought_shares = int(total_possible_shares * action_percent_amount)
-
         # Compute total purchase cost and cost basis for tax purposes.
-        cost = bought_shares * stock_price
+        cost = shares * stock_price
         self.balance -= cost
-        if self.shares + bought_shares > 0:
-            self.cost_basis = (cost + self.cost_basis*self.shares)/(self.shares + bought_shares)
+        if self.shares + shares > 0:
+            self.cost_basis = (cost + self.cost_basis*self.shares)/(self.shares + shares)
 
         # Update number of shares held.
-        self.shares += bought_shares
+        self.shares += shares
 
 
     def _action_sell(self, 
-        stock_price: float, 
-        action_percent_amount: float,
+        shares: int,
+        stock_price: float,
         ):
 
-        # Number of shares to be sold.
-        sold_shares = int(self.shares * action_percent_amount)
-
         # Compute sale price and update balance.
-        self.balance += sold_shares * stock_price
+        self.balance += shares * stock_price
 
         # Update current shares.
-        self.shares -= sold_shares
+        self.shares -= shares
 
 
     def _perform_action(self, action):
@@ -159,20 +149,19 @@ class StockDataEnv(gym.Env):
             high=self.df['Close'].iloc[self.current_step],
         )
 
-        # Split the action into type and percentage amount.
-        action_type, action_percent_amount = self.parse_action(action)
-
         # Perform buy action.
-        if action_type == ActionType.BUY:
-            self._action_buy(stock_price, action_percent_amount)
+        if action > 0:
+            shares = action
+            self._action_buy(shares, stock_price)
 
         # Perform sell action.
-        elif action_type == ActionType.SELL:
-            self._action_sell(stock_price, action_percent_amount)
+        elif action < 0:
+            shares = np.abs(action) # Convert number of stocks to sell to be a positive number.
+            self._action_sell(shares, stock_price)
 
         # Perform hold action.
         # This is most likely "do nothing".
-        elif action_type == ActionType.HOLD:
+        else:
             pass
 
         # Update current net worth.
