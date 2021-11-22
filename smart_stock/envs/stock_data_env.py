@@ -65,18 +65,18 @@ class StockDataEnv(gym.Env):
         df: DataFrame,
         start_balance: float,
         max_stock: int = 100,
-        max_steps: int = None,
+        # max_steps: int = None,
         start_day: int = None,
     ):
         super().__init__()
 
-        # Initial reset parameters.
-        self._start_day = start_day
-        self._start_balance = start_balance
-        if max_steps is None:
-            self._max_steps = len(df.index)
-        else:
-            self._max_steps = max_steps
+        # # Initial reset parameters.
+        # self._start_day = start_day
+        # self._start_balance = start_balance
+        # if max_steps is None:
+        #     self._max_steps = len(df.index)
+        # else:
+        #     self._max_steps = max_steps
 
         # Preserve the input dataframe.
         self.df = df
@@ -180,6 +180,9 @@ class StockDataEnv(gym.Env):
 
     def step(self, action):
 
+        # Preserve current net worth.
+        curr_net_worth = self.net_worth
+
         # Take the given action.
         self._perform_action(action)
 
@@ -199,7 +202,8 @@ class StockDataEnv(gym.Env):
         # Reward is the current balance multiplied by
         # a fraction of the current step given the maximum
         # number of steps possible.
-        reward = self.balance * (self.current_step / self._max_steps)
+        # reward = self.balance * (self.current_step / self._max_steps)
+        reward = (self.net_worth - curr_net_worth) * (2. ** -11.)
 
         # Get next observation.
         obs = self._get_observation()
