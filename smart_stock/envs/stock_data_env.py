@@ -11,11 +11,6 @@ from pandas import DataFrame
 
 # Idea: environment for live market interaction.
 
-class ActionType(enum.Enum):
-    BUY = 0
-    SELL = 1
-    HOLD = 2
-
 
 class RenderMode(enum.Enum):
     ASCII = 'ascii'
