@@ -67,11 +67,11 @@ def main():
 
     # Set tweakable parameters.
     gamma = 0.9 # Discount factor (should be in (0,1)).
-    alpha = 0.001 # Step size.
-    epsilon = 0.1 # Epsilon-greedy action selection (should be in (0,1)).
+    alpha = 0.01 # Step size.
+    epsilon = 0.2 # Epsilon-greedy action selection (should be in (0,1)).
     max_episodes = 10 # 1000 # Upper-limit on number of possible episodes.
-    max_steps = 10
-    render = True
+    max_steps = 100
+    render = False
 
     # Initialize linear function approximator by clipping low/high observation range.
     order = 3
