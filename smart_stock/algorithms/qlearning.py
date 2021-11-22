@@ -80,6 +80,7 @@ class Q_SFM:
         # Epsilon-greedy action selection.
         if np.random.uniform(0, 1) < self.epsilon:
             action = self.env.action_space.sample()
+            action = np.array(action).flatten()[0] # Handle random sampling from 1D Box space.
         else:
             action_index = np.argmax([self.q_value(curr_state, self.index2action(ai)) for ai in range(self.action_count)])
             action = self.index2action(action_index) # Convert index to action value.
