@@ -129,8 +129,8 @@ class StockDataEnv(gym.Env):
         stock_price: float,
         ):
 
-        # Cap number of shares to sell based on our inventory.
-        shares = min(self.shares, shares)
+        # # Cap number of shares to sell based on our inventory.
+        # shares = min(self.shares, shares)
 
         # Compute sale price and update balance.
         self.balance += shares * stock_price
@@ -246,7 +246,7 @@ class StockDataEnv(gym.Env):
         obs = self._get_observation()
 
         # Human readable text.
-        if mode == RenderMode.ASCII:
+        if mode is None or mode == RenderMode.ASCII:
             print(f"[{self.current_step}] Balance: {obs[0]}")
             print(f"[{self.current_step}] Net Worth: {obs[1]}")
             print(f"[{self.current_step}] Shares: {obs[2]}")
