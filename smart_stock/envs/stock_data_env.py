@@ -239,14 +239,21 @@ class StockDataEnv(gym.Env):
         # Convert render mode string into enum (enforces validation too).
         mode = RenderMode(mode)
 
+        # Get current observation.
+        obs = self._get_observation()
+
         # Human readable text.
         if mode == RenderMode.ASCII:
-            print(f"[{self.current_step}] Balance: {self.balance}")
-            print(f"[{self.current_step}] Shares: {self.shares}")
-            print(f"[{self.current_step}] Net Worth: {self.net_worth}")
-            print(f"[{self.current_step}] Cost Basis: {self.cost_basis}")
+            print(f"[{self.current_step}] Balance: {obs[0]}")
+            print(f"[{self.current_step}] Net Worth: {obs[1]}")
+            print(f"[{self.current_step}] Shares: {obs[2]}")
+            print(f"[{self.current_step}] Open: {obs[3]}")
+            print(f"[{self.current_step}] High: {obs[4]}")
+            print(f"[{self.current_step}] Low: {obs[5]}")
+            print(f"[{self.current_step}] Close: {obs[6]}")
+            print(f"[{self.current_step}] Volume: {obs[7]}")
 
         # CSV format.
         elif mode == RenderMode.CSV:
-            items = [self.current_step, self.balance, self.shares, self.net_worth, self.cost_basis]
-            print(','.join(str(x) for x in items))
+            # items = [self.current_step, self.balance, self.shares, self.net_worth, self.cost_basis]
+            print(','.join(str(x) for x in obs))
