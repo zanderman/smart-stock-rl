@@ -13,7 +13,13 @@ from typing import List, Tuple
 # env = ss.envs.StockEnv(df, start_balance, history)
 
 
-def train(algo: ss.algorithms.qlearning.Q_SFM, env: gym.Env, n_episodes: int = 1000) -> Tuple[List[float], bool]:
+def train(
+    algo: ss.algorithms.qlearning.Q_SFM, 
+    env: gym.Env,
+    max_episodes: int = 1000,
+    max_steps: int = None,
+    render: bool = False
+    ) -> Tuple[List[float], bool]:
 
     # List of reward values for plotting.
     rewards = []
@@ -22,17 +28,11 @@ def train(algo: ss.algorithms.qlearning.Q_SFM, env: gym.Env, n_episodes: int = 1
     found_soln = False
 
     # Episode loop.
-    for i in range(n_episodes):
-        # reward = algo.run_episode(max_steps=10, render=False)
-        reward = algo.run_episode(render=True)
+    for i in range(max_episodes):
+        reward = algo.run_episode(max_steps=max_steps, render=render)
         rewards.append(reward)
         # if i%100 == 0: print(f'[{i}] {reward}')
-        # print(f'[{i}] {reward}')
-
-        # # Check if agent has found solution.
-        # if i >= window and np.mean(rewards[i-window:]) >= goal:
-        #     found_soln = True
-        #     break
+        print(f'[{i}] {reward}')
 
     return rewards, found_soln
 
@@ -50,7 +50,7 @@ def main():
     df = dataset['aapl']
     start_balance = 100
     max_stock = 100
-    start_day = 0
+    start_day = None
     env = ss.envs.StockDataEnv(
         df=df, 
         start_balance=start_balance, 
@@ -68,13 +68,15 @@ def main():
     # Set tweakable parameters.
     gamma = 0.9 # Discount factor (should be in (0,1)).
     alpha = 0.001 # Step size.
-    epsilon = 0.05 # Epsilon-greedy action selection (should be in (0,1)).
-    n_episodes = 1 # 1000 # Upper-limit on number of possible episodes.
+    epsilon = 0.1 # Epsilon-greedy action selection (should be in (0,1)).
+    max_episodes = 10 # 1000 # Upper-limit on number of possible episodes.
+    max_steps = 10
+    render = True
 
     # Initialize linear function approximator by clipping low/high observation range.
     order = 3
-    print(env.observation_space.low.shape)
-    print(env.observation_space.high.shape)
+    # print(env.observation_space.low.shape)
+    # print(env.observation_space.high.shape)
     obs_low = np.clip(env.observation_space.low, -10, 10)
     # low = np.clip(env.observation_space.low[0], -10, 10)
     obs_high = np.clip(env.observation_space.high, -10, 10)
@@ -86,24 +88,22 @@ def main():
     # act_low = env.action_space.low
     # act_high = env.action_space.high
 
-    obs = env.reset()
-    # print(obs.shape)
-    # print(lfa.normalize(obs).shape)
-    # print(lfa(obs).shape)
+    # obs = env.reset()
+    # # print(obs.shape)
+    # # print(lfa.normalize(obs).shape)
+    # # print(lfa(obs).shape)
 
-    print('obs.shape',obs.shape)
-    print('lfa.normalize(obs).shape',lfa.normalize(obs).shape)
-    print('lfa.coeffs.shape',lfa.coeffs.shape)
-    print('lfa.coeffs',lfa.coeffs)
-    print(lfa(obs).shape)
+    # print('obs.shape',obs.shape)
+    # print('lfa.normalize(obs).shape',lfa.normalize(obs).shape)
+    # print('lfa.coeffs.shape',lfa.coeffs.shape)
+    # print('lfa.coeffs',lfa.coeffs)
+    # print(lfa(obs).shape)
 
     # Create Q-learning algorithm agent with LFA.
     agent = ss.algorithms.qlearning.Q_SFM(env, lfa, gamma, alpha, epsilon)
 
     # Train the agent 
-    rewards, found_soln = train(agent, env, n_episodes)
-
-    return
+    rewards, found_soln = train(agent, env, max_episodes, max_steps, render)
 
     # Plot the rewards.
     plt.figure()
