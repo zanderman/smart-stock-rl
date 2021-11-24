@@ -59,7 +59,7 @@ class StockDataEnv(gym.Env):
     metadata = {'render.modes': [RenderMode.ASCII, RenderMode.CSV]}
 
     # Static list of header column names to use for each observation.
-    _df_obs_cols = ['Open','High','Low','Close','Volume']
+    df_obs_cols = ['Open','High','Low','Close','Volume']
 
     def __init__(self, 
         df: DataFrame,
@@ -170,7 +170,7 @@ class StockDataEnv(gym.Env):
     def _get_observation(self):
 
         # Get necessary rows of data frame as numpy matrix.
-        obs = self.df[self._df_obs_cols].iloc[self.current_step].to_numpy()
+        obs = self.df[self.df_obs_cols].iloc[self.current_step].to_numpy()
 
         # Prepend agent-specific observations.
         # Adds:
