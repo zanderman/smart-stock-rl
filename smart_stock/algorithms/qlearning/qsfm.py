@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 from typing import Tuple
-from ..mapping.state_feature_mapping import StateFeatureMapping
+from ...mapping.state_feature_mapping import StateFeatureMapping
 
 
 
