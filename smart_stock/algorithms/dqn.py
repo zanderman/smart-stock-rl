@@ -1,6 +1,7 @@
 """Deep Q-Learning agents.
 """
 from collections import deque, namedtuple
+from typing import Callable
 import torch
 import random
 
@@ -25,6 +26,7 @@ class ReplayMemory(list):
     for use with RL agents when traversing environments.
     """
     def __init__(self, capacity: int):
+        super().__init__()
         self.memory = deque([], maxlen=capacity)
 
     def __len__(self):
