@@ -1,7 +1,6 @@
 """Deep Q-Learning agents.
 """
 from collections import deque, namedtuple
-from typing import Callable
 import torch
 import random
 
