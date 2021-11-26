@@ -62,9 +62,23 @@ class ReplayMemory(list):
         return random.sample(self.memory, size)
 
 
+class FFLinearBlock(torch.nn.Module):
+    """Simple feed-forward linear block layer with batchnorm and PReLU activation."""
+    def __init__(self, input_dim: int, output_dim: int):
+        super().__init__()
+        self.layer = torch.nn.Sequential(
+                torch.nn.Linear(input_dim, output_dim),
+                torch.nn.BatchNorm1d(output_dim),
+                torch.nn.PReLU(), # https://arxiv.org/pdf/1710.05941.pdf
+            )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.layer(x)
+
+
 # Example: https://gist.github.com/kkweon/52ea1e118101eb574b2a83b933851379
 # Example: https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
-class DQN_Linear(torch.nn.Module):
+class DQN_FFLinear(torch.nn.Module):
     """Deep Q-learning linear feed-forward network."""
     def __init__(self, dims: list[int]):
         super().__init__()
@@ -79,11 +93,7 @@ class DQN_Linear(torch.nn.Module):
         # The input/output dimensions are collected by
         # zipping the original list with a shift-by-1 version.
         for input_dim, output_dim in zip(dims, dims[1:]):
-            self.layers.append(torch.nn.Sequential(
-                torch.nn.Linear(input_dim, output_dim),
-                torch.nn.BatchNorm1d(output_dim),
-                torch.nn.PReLU(), # https://arxiv.org/pdf/1710.05941.pdf
-            ))
+            self.layers.append(FFLinearBlock(input_dim, output_dim))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
