@@ -86,11 +86,11 @@ class EpsilonGreedyPolicy(BasePolicy):
         # Preserve epsilon value.
         self.epsilon = epsilon
 
-    def select_random_action(self, obs: object):
+    def select_random_action(self, obs: object) -> object:
         """Return a randomized action from the action space."""
         return self.action_space.sample()
 
-    def select_greedy_action(self, obs: object):
+    def select_greedy_action(self, obs: object) -> object:
         """Return a greedy action from the action space based on the given observation."""
         raise NotImplementedError
 
