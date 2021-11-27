@@ -1,6 +1,6 @@
+from __future__ import annotations
 import gym
 import numpy as np
-from typing import Tuple
 from ...mapping.fourier import FourierStateFeatureMapping
 
 
@@ -86,7 +86,7 @@ class QPolicy:
         env: gym.Env, 
         gamma: float,
         alpha: float
-    ) -> Tuple[np.ndarray, float, bool]:
+    ) -> tuple[np.ndarray, float, bool]:
 
         # Epsilon-greedy action selection.
         if np.random.uniform(0, 1) < self.epsilon:
