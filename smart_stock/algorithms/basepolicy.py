@@ -66,7 +66,7 @@ class ContinuousStateDiscreteActionPolicy(BasePolicy):
         """Retreive position index from action."""
         return np.where(self.action_list == action)[0][0]
 
-    def select_action(self, obs: object):
+    def select_action(self, obs: object) -> object:
         raise NotImplementedError
 
 
@@ -94,7 +94,7 @@ class EpsilonGreedyPolicy(BasePolicy):
         """Return a greedy action from the action space based on the given observation."""
         raise NotImplementedError
 
-    def select_action(self, obs: object):
+    def select_action(self, obs: object) -> object:
         """Select an action using epsilon-greedy strategy."""
 
         # Random action.
