@@ -6,7 +6,7 @@ from ..basepolicy import ContinuousStateDiscreteActionPolicy, EpsilonGreedyPolic
 from .networks import FeedForwardLinear
 
 
-class DQNPolicy(ContinuousStateDiscreteActionPolicy, EpsilonGreedyPolicy):
+class DQNPolicy(EpsilonGreedyPolicy, ContinuousStateDiscreteActionPolicy):
     def __init__(self,
         action_space: gym.Space,
         observation_space: gym.Space,
