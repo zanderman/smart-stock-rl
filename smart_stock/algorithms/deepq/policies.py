@@ -46,7 +46,7 @@ class DQNPolicy(EpsilonGreedyPolicy, ContinuousStateDiscreteActionPolicy):
         env: gym.Env, 
         gamma: float,
         alpha: float
-    ) -> tuple[np.ndarray, float, bool]:
+    ) -> tuple[np.ndarray, np.ndarray, float, bool]:
 
         # Select action according to policy.
         action = self.select_action(curr_state)
@@ -57,7 +57,7 @@ class DQNPolicy(EpsilonGreedyPolicy, ContinuousStateDiscreteActionPolicy):
         # TODO Update policy.
         pass
 
-        return next_state, reward, done
+        return action, next_state, reward, done
 
 
 class FeedForwardLinearPolicy(DQNPolicy):
@@ -90,7 +90,10 @@ class FeedForwardLinearPolicy(DQNPolicy):
         env: gym.Env, 
         gamma: float,
         alpha: float
-    ) -> tuple[np.ndarray, float, bool]:
+    ) -> tuple[np.ndarray, np.ndarray, float, bool]:
 
         # Select action according to policy.
         action = self.select_action(curr_state)
+
+        next_state, reward, done = None, None, None
+        return action, next_state, reward, done
