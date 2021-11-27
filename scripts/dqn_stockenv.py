@@ -17,10 +17,13 @@ from smart_stock.algorithms.deepq import policies
 
 
 def train(
-    algo: ss.algorithms.qlearning.Q_SFM, 
+    agent: ss.algorithms.deepq.dqn.DQN, 
     env: gym.Env,
     max_episodes: int = 1000,
     max_steps: int = None,
+    batch_size: int = 32,
+    memory_capacity: int = 1000,
+    target_update_freq: int = 10,
     render: bool = False,
     render_mode: str = None,
     ) -> tuple[list[float], bool]:
@@ -33,7 +36,12 @@ def train(
 
     # Episode loop.
     for i in range(max_episodes):
-        reward = algo.run_episode(max_steps=max_steps, render=render, render_mode=render_mode)
+        reward = agent.run_episode(
+            max_steps=max_steps, 
+            target_update_freq=target_update_freq,
+            render=render, 
+            render_mode=render_mode,
+        )
         rewards.append(reward)
         # if i%100 == 0: print(f'[{i}] {reward}')
         print(f'[{i}] {reward}')
@@ -75,14 +83,14 @@ def main():
     alpha = 0.0001 # Step size.
     epsilon = 0.2 # Epsilon-greedy action selection (should be in (0,1)).
     max_episodes = 50 # 1000 # Upper-limit on number of possible episodes.
-    max_steps = 50
-    render = True
+    max_steps = 500
+    batch_size = 32
+    memory_capacity = 1000
+    target_update_freq = 10
+    render = False
     render_mode = 'csv'
 
-    # ---------------------------------
 
-
-    epsilon = 0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     n_actions = len(np.arange(env.action_space.low, env.action_space.high+1))
     dims = [
@@ -101,8 +109,6 @@ def main():
     optimizer = torch.optim.SGD(policy.policy_net.parameters(), lr=alpha)
     criterion = torch.nn.SmoothL1Loss()
 
-    batch_size = 32
-    memory_capacity = 1000
     agent = ss.algorithms.deepq.dqn.DQN(
         env, 
         policy, 
@@ -114,51 +120,64 @@ def main():
         criterion
     )
 
-    max_steps = 1000
-    agent.run_episode(max_steps)
-
-
-
-    return
-
-    # ---------------------------------
-
-    # Initialize linear function approximator by clipping low/high observation range.
-    order = 3
-    # print(env.observation_space.low.shape)
-    # print(env.observation_space.high.shape)
-    obs_low = np.clip(env.observation_space.low, -10, 10)
-    # low = np.clip(env.observation_space.low[0], -10, 10)
-    obs_high = np.clip(env.observation_space.high, -10, 10)
-    # high = np.clip(env.observation_space.high[0], -10, 10)
-    # lfa = ss.mapping.fourier.UncoupledFourierStateFeatureMapping(low, high, order)
-    lfa = ss.mapping.fourier.FourierStateFeatureMapping(obs_low, obs_high, order)
-
-    # # Get range of action space.
-    # act_low = env.action_space.low
-    # act_high = env.action_space.high
-
-    # obs = env.reset()
-    # # print(obs.shape)
-    # # print(lfa.normalize(obs).shape)
-    # # print(lfa(obs).shape)
-
-    # print('obs.shape',obs.shape)
-    # print('lfa.normalize(obs).shape',lfa.normalize(obs).shape)
-    # print('lfa.coeffs.shape',lfa.coeffs.shape)
-    # print('lfa.coeffs',lfa.coeffs)
-    # print(lfa(obs).shape)
-
-    # Create Q-learning algorithm agent with LFA.
-    agent = ss.algorithms.qlearning.Q_SFM(env, lfa, gamma, alpha, epsilon)
+    # max_steps = 1000
+    # agent.run_episode(max_steps)
 
     # Train the agent 
-    rewards, found_soln = train(agent, env, max_episodes, max_steps, render, render_mode)
+    rewards, found_soln = train(
+        agent, 
+        env, 
+        max_episodes, 
+        max_steps, 
+        batch_size,
+        memory_capacity,
+        target_update_freq,
+        render, 
+        render_mode,
+    )
+
+
+
+    # return
+
+    # # ---------------------------------
+
+    # # Initialize linear function approximator by clipping low/high observation range.
+    # order = 3
+    # # print(env.observation_space.low.shape)
+    # # print(env.observation_space.high.shape)
+    # obs_low = np.clip(env.observation_space.low, -10, 10)
+    # # low = np.clip(env.observation_space.low[0], -10, 10)
+    # obs_high = np.clip(env.observation_space.high, -10, 10)
+    # # high = np.clip(env.observation_space.high[0], -10, 10)
+    # # lfa = ss.mapping.fourier.UncoupledFourierStateFeatureMapping(low, high, order)
+    # lfa = ss.mapping.fourier.FourierStateFeatureMapping(obs_low, obs_high, order)
+
+    # # # Get range of action space.
+    # # act_low = env.action_space.low
+    # # act_high = env.action_space.high
+
+    # # obs = env.reset()
+    # # # print(obs.shape)
+    # # # print(lfa.normalize(obs).shape)
+    # # # print(lfa(obs).shape)
+
+    # # print('obs.shape',obs.shape)
+    # # print('lfa.normalize(obs).shape',lfa.normalize(obs).shape)
+    # # print('lfa.coeffs.shape',lfa.coeffs.shape)
+    # # print('lfa.coeffs',lfa.coeffs)
+    # # print(lfa(obs).shape)
+
+    # # Create Q-learning algorithm agent with LFA.
+    # agent = ss.algorithms.qlearning.Q_SFM(env, lfa, gamma, alpha, epsilon)
+
+    # # Train the agent 
+    # rewards, found_soln = train(agent, env, max_episodes, max_steps, render, render_mode)
 
     # Plot the rewards.
     plt.figure()
     plt.plot(rewards)
-    plt.title(f"Sum of Reward per Episode\nQ-Learning with LFA using Fourier Basis in {env_name} Environment\n$n={order}$, $d={obs_low.size}$, funcs={lfa.coeffs.shape[0]}, $\gamma={gamma}$, $\\alpha={alpha}$, $\epsilon={epsilon}$")
+    plt.title(f"Sum of Reward per Episode\nDQN using FeedForwardLinear Network in {env_name} Environment\n$\gamma={gamma}$, $\\alpha={alpha}$, $\epsilon={epsilon}$")
     plt.xlabel('Episode')
     plt.ylabel('Sum of Reward')
     plt.tight_layout()
