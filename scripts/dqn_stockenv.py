@@ -98,7 +98,10 @@ def main():
         dims,
         )
 
-    batch_size = 3
+    optimizer = torch.optim.SGD(policy.policy_net.parameters(), lr=alpha)
+    criterion = torch.nn.SmoothL1Loss()
+
+    batch_size = 32
     memory_capacity = 1000
     agent = ss.algorithms.deepq.dqn.DQN(
         env, 
@@ -107,9 +110,11 @@ def main():
         alpha, 
         memory_capacity, 
         batch_size,
+        optimizer,
+        criterion
     )
 
-    max_steps = 5
+    max_steps = 1000
     agent.run_episode(max_steps)
 
 
