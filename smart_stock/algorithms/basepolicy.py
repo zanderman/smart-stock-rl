@@ -65,3 +65,42 @@ class ContinuousStateDiscreteActionPolicy(BasePolicy):
     def action2index(self, action: int):
         """Retreive position index from action."""
         return np.where(self.action_list == action)[0][0]
+
+    def select_action(self, obs: object):
+        raise NotImplementedError
+
+
+class EpsilonGreedyPolicy(BasePolicy):
+    """Epsilon-greedy policy.
+
+    Epsilon controls the probability of choosing a random action.
+    It must be a floating-point value between [0,1].
+    """
+    def __init__(self,
+        action_space: gym.Space,
+        observation_space: gym.Space,
+        epsilon: float,
+    ):
+        super().__init__(action_space, observation_space)
+
+        # Preserve epsilon value.
+        self.epsilon = epsilon
+
+    def select_random_action(self, obs: object):
+        """Return a randomized action from the action space."""
+        return self.action_space.sample()
+
+    def select_greedy_action(self, obs: object):
+        """Return a greedy action from the action space based on the given observation."""
+        raise NotImplementedError
+
+    def select_action(self, obs: object):
+        """Select an action using epsilon-greedy strategy."""
+
+        # Random action.
+        if np.random.uniform(0, 1) < self.epsilon:
+            return self.select_random_action(obs)
+
+        # Epsilon-greedy action selection.
+        else:
+            return self.select_greedy_action(obs)
