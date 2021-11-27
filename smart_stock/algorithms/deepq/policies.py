@@ -2,6 +2,7 @@ from __future__ import annotations
 import gym
 import numpy as np
 import torch
+from torch._C import dtype
 from ..basepolicy import ContinuousStateDiscreteActionPolicy, EpsilonGreedyPolicy
 from .networks import FeedForwardLinear
 
@@ -17,6 +18,10 @@ class DQNPolicy(EpsilonGreedyPolicy, ContinuousStateDiscreteActionPolicy):
 
         # Preserve DQN-specific members.
         self.device = device
+
+    def state2tensor(self, state: np.ndarray) -> torch.Tensor:
+        """Helper to convert raw observation into PyTorch Tensor with proper dimension for policy network."""
+        raise NotImplementedError
 
     def select_random_action(self, obs: torch.Tensor) -> torch.Tensor:
         """Return a randomized action from the action space."""
@@ -77,21 +82,25 @@ class FeedForwardLinearPolicy(DQNPolicy):
         # Create network.
         self.policy_net = FeedForwardLinear(dims)
 
-    @staticmethod
-    def state2tensor(state: np.ndarray) -> torch.Tensor:
-        """Helper to convert raw observation into PyTorch Tensor."""
+    def state2tensor(self, state: np.ndarray) -> torch.Tensor:
+        """Helper to convert raw observation into PyTorch Tensor with proper dimension for policy network."""
         t = torch.from_numpy(state) # Convert to tensor.
+        t = t.to(device=self.device) # Send to device.
         t = t.unsqueeze(0) # Add batch dimension.
         t = t.float() # Convert to float.
         return t
 
     def select_greedy_action(self, obs: torch.Tensor) -> torch.Tensor:
         """Return a greedy action from the action space based on the given observation."""
-        print('greedy action')
         with torch.no_grad():
-            print('obs.shape',obs.shape,obs.dtype)
-            action = self.policy_net(obs)
-            print(action.shape)
+
+            # Get greedy action index.
+            action_idx: torch.Tensor = self.policy_net(obs).max(1)[1]
+
+            # Convert action index to action value.
+            action:torch.Tensor = torch.from_numpy(self.index2action(action_idx.numpy())).to(device=self.device)
+            # action: torch.Tensor = torch.Tensor([self.index2action(idx) for idx in action_idx], dtype=)
+
             return action
 
     def q_value(self, obs: torch.Tensor, action: int = None) -> torch.Tensor:
@@ -106,20 +115,23 @@ class FeedForwardLinearPolicy(DQNPolicy):
             return q_values[action]
 
     def step(self, 
-        curr_state: np.ndarray, 
+        curr_state: torch.Tensor, 
         env: gym.Env, 
         gamma: float,
         alpha: float
-    ) -> tuple[np.ndarray, np.ndarray, float, bool]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, bool]:
 
-        # Convert state to tensor.
-        curr_state = self.state2tensor(curr_state)
-        print('curr_state.shape',curr_state.shape,curr_state.dtype)
+        # # Convert state to tensor.
+        # curr_state: torch.Tensor = self.state2tensor(curr_state)
 
         # Select action according to policy.
-        action = self.select_action(curr_state)
+        action: torch.Tensor = self.select_action(curr_state)
 
         # Take selected action and get information from environment.
-        next_state, reward, done, _ = env.step(action)
+        next_state, reward, done, _ = env.step(action.item())
+        reward = torch.Tensor([reward], device=self.device)
+
+        # Convert state to tensor.
+        next_state: torch.Tensor = self.state2tensor(next_state)
 
         return action, next_state, reward, done
