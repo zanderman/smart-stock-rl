@@ -55,7 +55,7 @@ class DQNPolicy(EpsilonGreedyPolicy, ContinuousStateDiscreteActionPolicy):
         env: gym.Env, 
         gamma: float,
         alpha: float
-    ) -> tuple[np.ndarray, np.ndarray, float, bool]:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, bool]:
 
         # Select action according to policy.
         action = self.select_action(curr_state)
