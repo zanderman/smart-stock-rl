@@ -66,14 +66,9 @@ class FeedForwardLinearPolicy(DQNPolicy):
         observation_space: gym.Space,
         epsilon: float,
         device: torch.device,
-        inner_dims: list[int],
+        dims: list[int],
     ):
         super().__init__(action_space, observation_space, epsilon, device)
-
-        # Populate dimension list.
-        dims = [self.observation_space.shape[0]] # input dimension.
-        dims = dims + inner_dims # hidden dimension
-        dims = dims + [self.action_count] # output dimension.
 
         # Create network.
         self.policy_net = FeedForwardLinear(dims)
