@@ -34,8 +34,11 @@ class DQNPolicy(ContinuousStateDiscreteActionPolicy, EpsilonGreedyPolicy):
         """Return a greedy action from the action space based on the given observation."""
         raise NotImplementedError
 
-    def action_probs(self, obs: torch.Tensor) -> torch.Tensor:
-        """Compute probabilities for each action using the given observation."""
+    def q_value(self, obs: torch.Tensor, action: int = None) -> torch.Tensor:
+        """Compute Q-value for given observation and action.
+
+        If no action is specified, it returns the Q-values for all actions.
+        """
         raise NotImplementedError
 
     def step(self, 
@@ -69,3 +72,13 @@ class FeedForwardLinearPolicy(DQNPolicy):
 
         # Create network.
         self.policy_net = FeedForwardLinear(dims)
+
+    def step(self, 
+        curr_state: np.ndarray, 
+        env: gym.Env, 
+        gamma: float,
+        alpha: float
+    ) -> tuple[np.ndarray, float, bool]:
+
+        # Select action according to policy.
+        action = self.select_action(curr_state)
