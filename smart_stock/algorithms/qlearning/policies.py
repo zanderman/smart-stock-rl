@@ -26,9 +26,6 @@ class QPolicy(EpsilonGreedyPolicy, ContinuousStateDiscreteActionPolicy):
     ):
         super().__init__(action_space, observation_space, epsilon)
 
-        # # Preserve Q-learing-specific members.
-        # self.epsilon = epsilon
-
         # Initialize weight matrix.
         self.theta = np.zeros((self.action_count, n_features,)) # actions x features
 
