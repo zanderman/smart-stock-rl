@@ -8,7 +8,8 @@ class FeedForwardLinearBlock(torch.nn.Module):
         super().__init__()
         self.layer = torch.nn.Sequential(
                 torch.nn.Linear(input_dim, output_dim),
-                torch.nn.BatchNorm1d(output_dim),
+                # torch.nn.BatchNorm1d(output_dim),
+                torch.nn.LayerNorm(output_dim),
                 torch.nn.PReLU(), # https://arxiv.org/pdf/1710.05941.pdf
             )
 
