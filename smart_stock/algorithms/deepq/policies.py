@@ -19,6 +19,10 @@ class DQNPolicy(EpsilonGreedyPolicy, ContinuousStateDiscreteActionPolicy):
         # Preserve DQN-specific members.
         self.device = device
 
+        # Initialize policy network to empty.
+        # All sub-classes should override this.
+        self.policy_net: torch.nn.Module = None
+
     def state2tensor(self, state: np.ndarray) -> torch.Tensor:
         """Helper to convert raw observation into PyTorch Tensor with proper dimension for policy network."""
         raise NotImplementedError
