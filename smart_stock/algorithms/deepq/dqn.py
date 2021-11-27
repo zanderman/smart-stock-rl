@@ -98,10 +98,11 @@ class DQN:
         batch_rewards = torch.cat(batch.reward)
         batch_next_states = torch.cat(batch.next_state)
 
-        print(batch_states.shape)
-        print(batch_actions.shape)
-        print(batch_rewards.shape)
-        print(batch_next_states.shape)
+        print('optimize_policy')
+        print('batch_states.shape',batch_states.shape)
+        print('batch_actions.shape',batch_actions.shape)
+        print('batch_rewards.shape',batch_rewards.shape)
+        print('batch_next_states.shape',batch_next_states.shape)
         print()
 
     def run_episode(self, 
@@ -112,6 +113,9 @@ class DQN:
 
         # Reset the environment and get starting state.
         curr_state = self.env.reset()
+
+        # Convert state to tensor.
+        curr_state: torch.Tensor = self.policy.state2tensor(curr_state)
 
         total_reward = 0
         step = 0
