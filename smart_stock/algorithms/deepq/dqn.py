@@ -145,7 +145,7 @@ class DQN:
             self.optimize_policy()
 
             # Accumulate rewards for the current episode.
-            total_reward += reward
+            total_reward += reward.item()
 
             # Update the current state.
             curr_state = next_state
