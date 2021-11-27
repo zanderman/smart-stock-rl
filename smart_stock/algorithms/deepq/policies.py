@@ -66,12 +66,29 @@ class FeedForwardLinearPolicy(DQNPolicy):
         observation_space: gym.Space,
         epsilon: float,
         device: torch.device,
-        dims: list[int],
+        inner_dims: list[int],
     ):
         super().__init__(action_space, observation_space, epsilon, device)
 
+        # Populate dimension list.
+        dims = [self.observation_space.shape[0]] # input dimension.
+        dims = dims + inner_dims # hidden dimension
+        dims = dims + [self.action_count] # output dimension.
+
         # Create network.
         self.policy_net = FeedForwardLinear(dims)
+
+
+    def q_value(self, obs: torch.Tensor, action: int = None) -> torch.Tensor:
+        """Compute Q-value for given observation and action.
+
+        If no action is specified, it returns the Q-values for all actions.
+        """
+        q_values = self.policy_net(obs)
+        if action is None:
+            return q_values
+        else:
+            return q_values[action]
 
     def step(self, 
         curr_state: np.ndarray, 
