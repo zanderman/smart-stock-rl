@@ -2,7 +2,10 @@
 """
 from __future__ import annotations
 from collections import deque, namedtuple
+import gym
 import random
+import torch
+from .policies import DQNPolicy
 
 
 # We use a `namedtuple` object here because it can
@@ -58,3 +61,98 @@ class ReplayMemory(list):
     def sample(self, size: int):
         """Generate a random sampling without replacement from replay memory."""
         return random.sample(self.memory, size)
+
+
+class DQN:
+    def __init__(self, 
+        env: gym.Env,  
+        policy: DQNPolicy, 
+        gamma: float, 
+        alpha: float, 
+        memory_capacity: int,
+        batch_size: int,
+    ):
+        self.env = env
+        self.policy = policy
+        self.gamma = gamma
+        self.alpha = alpha
+        self.memory = ReplayMemory(memory_capacity)
+        self.batch_size = batch_size
+
+    def optimize_policy(self):
+        """Optimize the DQN policy using replay memory."""
+
+        # Do not update if there is not enough transitions in memory.
+        if len(self.memory) < self.batch_size:
+            return
+
+        # Randomly select transitions from replay memory.
+        batch = self.memory.sample(self.batch_size)
+
+        # Transpose batch to get separate lists.
+        batch = StateActionTransition(*zip(*batch))
+
+        # Convert batch lists to PyTorch tensors.
+        batch_states = torch.cat(batch.state)
+        batch_actions = torch.cat(batch.action)
+        batch_rewards = torch.cat(batch.reward)
+        batch_next_states = torch.cat(batch.next_state)
+
+        print(batch_states.shape)
+        print(batch_actions.shape)
+        print(batch_rewards.shape)
+        print(batch_next_states.shape)
+        print()
+
+    def run_episode(self, 
+        max_steps: int = None, 
+        render: bool = False, 
+        render_mode: str = None,
+    ):
+
+        # Reset the environment and get starting state.
+        curr_state = self.env.reset()
+
+        total_reward = 0
+        step = 0
+        while True:
+
+            # Render the environment if requested.
+            if render: self.env.render(mode=render_mode)
+
+            # Step the algorithm through the current state and retreive
+            # the Q-matrix, next state, and the termination flag.
+            action, next_state, reward, done = self.policy.step(
+                curr_state, 
+                self.env, 
+                self.gamma, 
+                self.alpha,
+            )
+
+            # Store state-action transition in memory.
+            self.memory.push(
+                curr_state,
+                action,
+                next_state,
+                reward,
+            )
+
+            # Optimize the policy at the current step.
+            self.optimize_policy()
+
+            # Accumulate rewards for the current episode.
+            total_reward += reward
+
+            # Update the current state.
+            curr_state = next_state
+
+            # Update the step count.
+            step += 1
+
+            # Terminate steps early if environment enters terminal state.
+            if done: break
+
+            # Terminate if step count is reached.
+            elif max_steps is not None and step >= max_steps: break
+
+        return total_reward
