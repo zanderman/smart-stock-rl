@@ -1,10 +1,11 @@
 from __future__ import annotations
 import gym
 import numpy as np
+from ..basepolicy import ContinuousStateDiscreteActionPolicy
 from ...mapping.fourier import FourierStateFeatureMapping
 
 
-class QPolicy:
+class QPolicy(ContinuousStateDiscreteActionPolicy):
     """Generic Q-learning policy.
 
     This policy accepts the following:
@@ -23,44 +24,13 @@ class QPolicy:
         n_features: int,
         epsilon: float,
     ):
-        self.action_space = action_space
-        self.observation_space = observation_space
+        super().__init__(action_space, observation_space)
+
+        # Preserve Q-learing-specific members.
         self.epsilon = epsilon
-
-        # Generate discrete action list based on integer Box space.
-        if type(action_space) == gym.spaces.Box:
-
-            # Validate action space data type and limits.
-            if action_space.dtype != int:
-                raise TypeError('only integer action space is supported')
-            elif action_space.high >= np.iinfo(action_space.dtype).max:
-                raise TypeError('action space upper limit must be finite')
-            elif action_space.low <= np.iinfo(action_space.dtype).min:
-                raise TypeError('action space lower limit must be finite')
-
-            # Get action space limits.
-            actions_low = action_space.low
-            actions_high = action_space.high
-
-        # Generate discrete action list based on Discrete space.
-        if type(action_space) == gym.spaces.Discrete:
-            actions_low = 0
-            actions_high = action_space.n
-
-        # Build action list.
-        self.action_list = np.arange(actions_low, actions_high+1)
-        self.action_count = len(self.action_list)
 
         # Initialize weight matrix.
         self.theta = np.zeros((self.action_count, n_features,)) # actions x features
-
-    def index2action(self, index: int):
-        """Retreive action from position index."""
-        return self.action_list[index]
-
-    def action2index(self, action: int):
-        """Retreive position index from action."""
-        return np.where(self.action_list == action)[0][0]
 
     def features(self, obs: np.ndarray) -> np.ndarray:
         """Retreive feature representation of observation."""
