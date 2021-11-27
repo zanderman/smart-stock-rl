@@ -74,6 +74,8 @@ class DQN:
         alpha: float, 
         memory_capacity: int,
         batch_size: int,
+        optimizer: torch.optim.Optimizer,
+        criterion: Callable,
     ):
         self.env = env
         self.policy = policy
@@ -81,6 +83,8 @@ class DQN:
         self.alpha = alpha
         self.memory = ReplayMemory(memory_capacity)
         self.batch_size = batch_size
+        self.optimizer = optimizer
+        self.criterion = criterion
 
         # Keep another policy as the target policy for stability.
         self.target_policy_network: torch.nn.Module = copy.deepcopy(self.policy.policy_net)
@@ -113,13 +117,30 @@ class DQN:
         # Compute Q-values for each state in the batch.
         q_values = self.policy.policy_net(batch_states).gather(1, batch_action_idxs)
 
-        print('optimize_policy')
-        print('q_values.shape',q_values.shape)
-        print('batch_states.shape',batch_states.shape)
-        print('batch_actions.shape',batch_actions.shape)
-        print('batch_rewards.shape',batch_rewards.shape)
-        print('batch_next_states.shape',batch_next_states.shape)
-        print()
+        # Compute next-state Q-values.
+        next_q_values = self.target_policy_network(batch_next_states).max(1)[0].detach().to(device=self.policy.device)
+
+        # Compute expected Q-values.
+        expected_q_values = batch_rewards + (next_q_values * self.gamma)
+
+        # print('optimize_policy')
+        # print('q_values.shape',q_values.shape)
+        # print('next_q_values.shape',next_q_values.shape)
+        # print('expected_q_values.shape',expected_q_values.shape)
+        # print('batch_states.shape',batch_states.shape)
+        # print('batch_actions.shape',batch_actions.shape)
+        # print('batch_rewards.shape',batch_rewards.shape)
+        # print('batch_next_states.shape',batch_next_states.shape)
+
+        # Compute loss.
+        loss = self.criterion(q_values, expected_q_values)
+        # print('loss', loss)
+        # print()
+
+        # Optimize the model
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
 
     def run_episode(self, 
         max_steps: int = None, 
