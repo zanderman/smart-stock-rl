@@ -2,6 +2,7 @@
 """
 from __future__ import annotations
 from collections import deque, namedtuple
+from typing import Callable
 import gym
 import random
 import torch
@@ -78,6 +79,11 @@ class DQN:
         self.alpha = alpha
         self.memory = ReplayMemory(memory_capacity)
         self.batch_size = batch_size
+
+        # Keep another policy as the target policy for stability.
+        self.target_policy_network: torch.nn.Module = self.policy.policy_net.detach().clone()
+        self.target_policy_network.load_state_dict(self.policy.policy_net.state_dict())
+        self.target_policy_network.eval()
 
     def optimize_policy(self):
         """Optimize the DQN policy using replay memory."""
