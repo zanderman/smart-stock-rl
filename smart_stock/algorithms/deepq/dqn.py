@@ -2,9 +2,11 @@
 """
 from __future__ import annotations
 from collections import deque, namedtuple
+import copy
 from typing import Callable
 import gym
 import random
+from numpy import dtype
 import torch
 from .policies import DQNPolicy
 
@@ -81,7 +83,7 @@ class DQN:
         self.batch_size = batch_size
 
         # Keep another policy as the target policy for stability.
-        self.target_policy_network: torch.nn.Module = self.policy.policy_net.detach().clone()
+        self.target_policy_network: torch.nn.Module = copy.deepcopy(self.policy.policy_net)
         self.target_policy_network.load_state_dict(self.policy.policy_net.state_dict())
         self.target_policy_network.eval()
 
@@ -104,7 +106,15 @@ class DQN:
         batch_rewards = torch.cat(batch.reward)
         batch_next_states = torch.cat(batch.next_state)
 
+        # Convert batch actions to their indexes.
+        # Note that actions are unsqueezed to have batch-first dimension.
+        batch_action_idxs = torch.Tensor([self.policy.action2index(action) for action in batch_actions.numpy()]).to(device=self.policy.device, dtype=int).unsqueeze(1)
+
+        # Compute Q-values for each state in the batch.
+        q_values = self.policy.policy_net(batch_states).gather(1, batch_action_idxs)
+
         print('optimize_policy')
+        print('q_values.shape',q_values.shape)
         print('batch_states.shape',batch_states.shape)
         print('batch_actions.shape',batch_actions.shape)
         print('batch_rewards.shape',batch_rewards.shape)
