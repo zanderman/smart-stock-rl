@@ -3,6 +3,7 @@ import gym
 import numpy as np
 import torch
 from ..basepolicy import ContinuousStateDiscreteActionPolicy, EpsilonGreedyPolicy
+from .networks import FeedForwardLinear
 
 
 class DQNPolicy(ContinuousStateDiscreteActionPolicy, EpsilonGreedyPolicy):
@@ -35,7 +36,7 @@ class DQNPolicy(ContinuousStateDiscreteActionPolicy, EpsilonGreedyPolicy):
 
     def action_probs(self, obs: torch.Tensor) -> torch.Tensor:
         """Compute probabilities for each action using the given observation."""
-        pass
+        raise NotImplementedError
 
     def step(self, 
         curr_state: np.ndarray, 
@@ -54,3 +55,17 @@ class DQNPolicy(ContinuousStateDiscreteActionPolicy, EpsilonGreedyPolicy):
         pass
 
         return next_state, reward, done
+
+
+class FeedForwardLinearPolicy(DQNPolicy):
+    def __init__(self,
+        action_space: gym.Space,
+        observation_space: gym.Space,
+        epsilon: float,
+        device: torch.device,
+        dims: list[int],
+    ):
+        super().__init__(action_space, observation_space, epsilon, device)
+
+        # Create network.
+        self.policy_net = FeedForwardLinear(dims)
