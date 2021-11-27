@@ -39,7 +39,7 @@ class DQNPolicy(EpsilonGreedyPolicy, ContinuousStateDiscreteActionPolicy):
         action = np.array(action).flatten()[0] # Handle random sampling from 1D Box space.
 
         # Convert action to PyTorch Tensor.
-        action = torch.Tensor([[action]], dtype=action.dtype, device=self.device)
+        action = torch.Tensor([action]).to(device=self.device)
 
         return action
 
