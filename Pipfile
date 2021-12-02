@@ -11,6 +11,7 @@ name = "pytorch"
 [packages]
 ipython = "*"
 smart-stock = {editable = true, path = "."}
+ipykernel = "*"
 
 [dev-packages]
 
