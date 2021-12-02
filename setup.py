@@ -1,7 +1,7 @@
 """Installation script for SmartStock.
 """
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # Path to current directory.
 CWD = os.path.abspath(os.path.dirname(__file__))
@@ -31,7 +31,7 @@ setup(
             'stable-baselines3',
         ],
     },
-    packages=['smart_stock'],
+    packages=find_packages(exclude='tests'),
     author='Alexander DeRieux',
     author_email='alexander.derieux@gmail.com',
     url='https://github.com/zanderman/smart-stock-rl',
