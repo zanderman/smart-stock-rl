@@ -1,6 +1,5 @@
 
 import glob
-import kaggle
 import os
 import pandas as pd
 
@@ -62,6 +61,7 @@ class HugeStockMarketDataset:
             path (str): The path to place the download.
             files (list, optional): Subset list of files to download instead of entire dataset. Defaults to None.
         """
+        import kaggle
 
         kaggle_dataset = 'borismarjanovic/price-volume-data-for-all-us-stocks-etfs'
 
