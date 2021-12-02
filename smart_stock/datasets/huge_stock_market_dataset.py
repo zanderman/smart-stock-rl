@@ -54,12 +54,13 @@ class HugeStockMarketDataset:
             self._index[stock_name] = file
 
 
-    def download(self, path: str, files: list = None):
+    def download(self, path: str, files: list = None, quiet: bool = True):
         """Downloads the dataset from Kaggle.
 
         Args:
             path (str): The path to place the download.
             files (list, optional): Subset list of files to download instead of entire dataset. Defaults to None.
+            quiet (bool, optional): Suppress verbose output. Defaults to True.
         """
         import kaggle
 
@@ -73,12 +74,14 @@ class HugeStockMarketDataset:
                     dataset=kaggle_dataset,
                     file_name=f,
                     path=os.path.join(path, *os.path.split(f)),
+                    quiet=quiet,
                 )
         else:
             kaggle.api.dataset_download_files(
                 dataset=kaggle_dataset,
                 path=path,
                 unzip=True,
+                quiet=quiet,
             )
 
         # Save the new downloaded path.
