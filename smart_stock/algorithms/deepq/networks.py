@@ -1,4 +1,5 @@
 """PyTorch networks used in DQN policies."""
+from __future__ import annotations
 import torch
 
 
