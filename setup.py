@@ -31,6 +31,7 @@ setup(
             'stable-baselines3',
         ],
     },
+    packages=['smart_stock'],
     author='Alexander DeRieux',
     author_email='alexander.derieux@gmail.com',
     url='https://github.com/zanderman/smart-stock-rl',
