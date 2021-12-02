@@ -14,13 +14,14 @@ class HugeStockMarketDataset:
     def __init__(self, 
         path: str, 
         files: list = None,
+        quiet: bool = True,
         ):
         self._index = {}
 
         # Download the dataset if necessary.
         newpath = os.path.join(path, self.root)
         if not os.path.exists(newpath):
-            self.download(newpath, files)
+            self.download(newpath, files, quiet=quiet)
         else:
             self.path = newpath
             self._build_index()
