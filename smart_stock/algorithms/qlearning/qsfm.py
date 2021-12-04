@@ -5,7 +5,7 @@ from ...mapping.state_feature_mapping import StateFeatureMapping
 
 
 
-class Q_SFM:
+class QSFM:
     """Q-learning with linear function approximation using the Fourier basis."""
 
     def __init__(self, 

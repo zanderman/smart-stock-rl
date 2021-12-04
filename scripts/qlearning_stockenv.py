@@ -7,6 +7,10 @@ import smart_stock as ss
 from typing import List, Tuple
 
 
+stocks = ['aapl', 'nvda', 'dis', 'ko', 'pg']
+dataset_root = '~/Desktop'
+
+
 # df = dataset['aapl']
 # start_balance = 100
 # history = 5
@@ -14,7 +18,7 @@ from typing import List, Tuple
 
 
 def train(
-    algo: ss.algorithms.qlearning.Q_SFM, 
+    algo: ss.algorithms.qlearning.qsfm.QSFM, 
     env: gym.Env,
     max_episodes: int = 1000,
     max_steps: int = None,
@@ -103,7 +107,7 @@ def main():
     # print(lfa(obs).shape)
 
     # Create Q-learning algorithm agent with LFA.
-    agent = ss.algorithms.qlearning.Q_SFM(env, lfa, gamma, alpha, epsilon)
+    agent = ss.algorithms.qlearning.qsfm.QSFM(env, lfa, gamma, alpha, epsilon)
 
     # Train the agent 
     rewards, found_soln = train(agent, env, max_episodes, max_steps, render, render_mode)

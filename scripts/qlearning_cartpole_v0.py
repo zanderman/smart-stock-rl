@@ -9,7 +9,7 @@ import smart_stock as ss
 from typing import List, Tuple
 
 
-def train(agent: ss.algorithms.qlearning.qsfm.Q_SFM, env: gym.Env, goal: float, window: int, n_episodes: int = 1000) -> Tuple[List[float], bool]:
+def train(agent: ss.algorithms.qlearning.qsfm.QSFM, env: gym.Env, goal: float, window: int, n_episodes: int = 1000) -> Tuple[List[float], bool]:
 
     # List of reward values for plotting.
     rewards = []
@@ -59,7 +59,7 @@ def main():
     lfa = ss.mapping.fourier.FourierStateFeatureMapping(low, high, order)
 
     # Create Q-learning algorithm agent with LFA.
-    agent = ss.algorithms.qlearning.qsfm.Q_SFM(env, lfa, gamma, alpha, epsilon)
+    agent = ss.algorithms.qlearning.qsfm.QSFM(env, lfa, gamma, alpha, epsilon)
 
     # Train the agent 
     goal = 195.0
