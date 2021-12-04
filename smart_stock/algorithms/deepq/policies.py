@@ -97,6 +97,7 @@ class FeedForwardLinearPolicy(DQNPolicy):
 
     def select_greedy_action(self, obs: torch.Tensor) -> torch.Tensor:
         """Return a greedy action from the action space based on the given observation."""
+        print('obs.device',obs.device)
         with torch.no_grad():
 
             # Get greedy action index.
