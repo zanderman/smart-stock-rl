@@ -209,8 +209,10 @@ class StockDataEnv(gym.Env):
         # reward = self.balance * (self.current_step / self._max_steps)
         reward = (self.net_worth - curr_net_worth) * (2. ** -11.)
 
-        # Get next observation.
-        obs = self._get_observation()
+        # Get next observation if step limit has not reached the end.
+        obs = None
+        if not done:
+            obs = self._get_observation()
 
         return obs, reward, done, {}
 
