@@ -85,6 +85,7 @@ class FeedForwardLinearPolicy(DQNPolicy):
 
         # Create network.
         self.policy_net = FeedForwardLinear(dims)
+        self.policy_net.to(device) # Send network to desired device.
 
     def state2tensor(self, state: np.ndarray) -> torch.Tensor:
         """Helper to convert raw observation into PyTorch Tensor with proper dimension for policy network."""
