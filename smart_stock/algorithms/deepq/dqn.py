@@ -112,7 +112,7 @@ class DQN:
 
         # Convert batch actions to their indexes.
         # Note that actions are unsqueezed to have batch-first dimension.
-        batch_action_idxs = torch.Tensor([self.policy.action2index(action) for action in batch_actions.numpy()]).to(device=self.policy.device, dtype=int).unsqueeze(1)
+        batch_action_idxs = torch.Tensor([self.policy.action2index(action) for action in batch_actions.cpu().numpy()]).to(device=self.policy.device, dtype=int).unsqueeze(1).to(device=self.policy.device)
 
         # Compute Q-values for each state in the batch.
         q_values: torch.Tensor = self.policy.policy_net(batch_states).gather(1, batch_action_idxs)
