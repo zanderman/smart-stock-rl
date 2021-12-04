@@ -136,7 +136,7 @@ class FeedForwardLinearPolicy(DQNPolicy):
 
         # Take selected action and get information from environment.
         next_state, reward, done, _ = env.step(action.item())
-        reward = torch.Tensor([reward], device=self.device)
+        reward = torch.Tensor([reward]).to(device=self.device)
 
         # Convert state to tensor.
         next_state: torch.Tensor = self.state2tensor(next_state)
