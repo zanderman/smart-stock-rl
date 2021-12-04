@@ -92,7 +92,12 @@ class QSFM:
             max_q_idxs = np.where(np.isclose(q, np.max(q)))[0]
 
             # Randomly select a maximum to prevent always selecting first instance.
-            action_index = np.random.choice(max_q_idxs)
+            try:
+                action_index = np.random.choice(max_q_idxs)
+            except:
+                print('q',q)
+                print('max_q_idxs',max_q_idxs)
+                raise
 
             # OLD IMPLEMENTATION OF SELECTING FIRST MAX.
             # action_index = np.argmax([self.q_value(curr_state, self.index2action(ai)) for ai in range(self.action_count)])
@@ -104,6 +109,11 @@ class QSFM:
 
         # Weight update.
         delta = reward + self.gamma * np.max(self.q_value(next_state), axis=0) - self.q_value(curr_state, action)
+
+        # Clip the error to prevent outliers from exploding.
+        delta = np.clip(delta, -1, 1)
+
+        # Update weights.
         self.theta[action] += self.alpha * delta * self.sfm(curr_state)
 
         return next_state, reward, done
