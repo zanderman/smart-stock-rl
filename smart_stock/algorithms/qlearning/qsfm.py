@@ -92,12 +92,7 @@ class QSFM:
             max_q_idxs = np.where(np.isclose(q, np.max(q)))[0]
 
             # Randomly select a maximum to prevent always selecting first instance.
-            try:
-                action_index = np.random.choice(max_q_idxs)
-            except:
-                print('q',q)
-                print('max_q_idxs',max_q_idxs)
-                raise
+            action_index = np.random.choice(max_q_idxs)
 
             # OLD IMPLEMENTATION OF SELECTING FIRST MAX.
             # action_index = np.argmax([self.q_value(curr_state, self.index2action(ai)) for ai in range(self.action_count)])
