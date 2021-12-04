@@ -227,7 +227,7 @@ class StockDataEnv(gym.Env):
         if self._start_day is None:
             self.current_step = self.np_random.randint(
                 low=0,
-                high=len(self.df.index)-1,
+                high=len(self.df.index)-2,
                 )
         else:
             self.current_step = self._start_day
