@@ -194,8 +194,10 @@ class StockDataEnv(gym.Env):
         self.current_step += 1
 
         # If the step index has exceeded the data frame, then we're done.
+        # Note that we check `len-2` here so that we can pull the last
+        # next observation at the end of the step.
         done = False
-        if self.current_step >= len(self.df.index):
+        if self.current_step == len(self.df.index)-2:
             done = True
 
         # Agent has run out of money.
@@ -210,10 +212,7 @@ class StockDataEnv(gym.Env):
         reward = (self.net_worth - curr_net_worth) * (2. ** -11.)
 
         # Get next observation if step limit has not reached the end.
-        if not done:
-            obs = self._get_observation()
-        else:
-            obs = np.array([])
+        obs = self._get_observation()
 
         return obs, reward, done, {}
 
