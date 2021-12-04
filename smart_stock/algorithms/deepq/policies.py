@@ -129,6 +129,7 @@ class FeedForwardLinearPolicy(DQNPolicy):
 
         # # Convert state to tensor.
         # curr_state: torch.Tensor = self.state2tensor(curr_state)
+        print('curr_state.device',curr_state.device)
 
         # Select action according to policy.
         action: torch.Tensor = self.select_action(curr_state)
