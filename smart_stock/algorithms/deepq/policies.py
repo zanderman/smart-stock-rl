@@ -104,7 +104,7 @@ class FeedForwardLinearPolicy(DQNPolicy):
             action_idx: torch.Tensor = self.policy_net(obs).max(1)[1]
 
             # Convert action index to action value.
-            action:torch.Tensor = torch.from_numpy(self.index2action(action_idx.numpy())).to(device=self.device)
+            action:torch.Tensor = torch.from_numpy(self.index2action(action_idx.cpu().numpy())).to(device=self.device)
             # action: torch.Tensor = torch.Tensor([self.index2action(idx) for idx in action_idx], dtype=)
 
             return action
