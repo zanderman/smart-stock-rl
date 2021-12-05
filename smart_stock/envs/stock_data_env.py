@@ -134,8 +134,8 @@ class StockDataEnv(gym.Env):
         stock_price: float,
         ):
 
-        # # Cap number of shares to sell based on our inventory.
-        # shares = min(self.shares, shares)
+        # Cap number of shares to sell based on our inventory.
+        shares = min(self.shares, shares)
 
         # Compute sale price and update balance.
         self.balance += shares * stock_price
