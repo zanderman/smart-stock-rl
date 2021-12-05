@@ -67,8 +67,7 @@ class ReplayMemory(list):
 
 
 class DQN:
-    def __init__(self, 
-        env: gym.Env,  
+    def __init__(self,  
         policy: DQNPolicy, 
         gamma: float, 
         alpha: float, 
@@ -77,7 +76,6 @@ class DQN:
         optimizer: torch.optim.Optimizer,
         criterion: Callable,
     ):
-        self.env = env
         self.policy = policy
         self.gamma = gamma
         self.alpha = alpha
@@ -142,7 +140,8 @@ class DQN:
         loss.backward()
         self.optimizer.step()
 
-    def run_episode(self, 
+    def run_episode(self,
+        env: gym.Env,
         max_steps: int = None, 
         target_update_freq: int = 10,
         render: bool = False, 
@@ -150,7 +149,7 @@ class DQN:
     ):
 
         # Reset the environment and get starting state.
-        curr_state = self.env.reset()
+        curr_state = env.reset()
 
         # Convert state to tensor.
         curr_state: torch.Tensor = self.policy.state2tensor(curr_state)
@@ -160,13 +159,13 @@ class DQN:
         while True:
 
             # Render the environment if requested.
-            if render: self.env.render(mode=render_mode)
+            if render: env.render(mode=render_mode)
 
             # Step the algorithm through the current state and retreive
             # the Q-matrix, next state, and the termination flag.
             action, next_state, reward, done = self.policy.step(
                 curr_state, 
-                self.env, 
+                env, 
                 self.gamma, 
                 self.alpha,
             )
