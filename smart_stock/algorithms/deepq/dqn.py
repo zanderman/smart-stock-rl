@@ -121,24 +121,35 @@ class DQN:
         # Compute expected Q-values.
         expected_q_values: torch.Tensor = batch_rewards + (next_q_values * self.gamma)
 
-        # print('optimize_policy')
-        # print('q_values.shape',q_values.shape)
-        # print('next_q_values.shape',next_q_values.shape)
-        # print('expected_q_values.shape',expected_q_values.shape)
-        # print('batch_states.shape',batch_states.shape)
-        # print('batch_actions.shape',batch_actions.shape)
-        # print('batch_rewards.shape',batch_rewards.shape)
-        # print('batch_next_states.shape',batch_next_states.shape)
-
         # Compute loss.
         loss = self.criterion(q_values, expected_q_values.unsqueeze(1))
-        # print('loss', loss)
-        # print()
 
         # Optimize the model
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
+    def step(self,
+        env: gym.Env,
+        curr_state: list | torch.Tensor, 
+        ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, bool]:
+        """Run a single step of the environment given an observation."""
+
+        # Convert state to tensor.
+        if not isinstance(curr_state, torch.Tensor):
+            curr_state: torch.Tensor = self.policy.state2tensor(curr_state)
+
+        # Step the algorithm through the current state and retreive
+        # the Q-matrix, next state, and the termination flag.
+        action, next_state, reward, done = self.policy.step(
+            curr_state, 
+            env, 
+            self.gamma, 
+            self.alpha,
+        )
+
+        return curr_state, action, next_state, reward, done
+
 
     def run_episode(self,
         env: gym.Env,
@@ -146,6 +157,7 @@ class DQN:
         target_update_freq: int = 10,
         render: bool = False, 
         render_mode: str = None,
+        optimize: bool = True,
     ):
 
         # Reset the environment and get starting state.
@@ -163,12 +175,7 @@ class DQN:
 
             # Step the algorithm through the current state and retreive
             # the Q-matrix, next state, and the termination flag.
-            action, next_state, reward, done = self.policy.step(
-                curr_state, 
-                env, 
-                self.gamma, 
-                self.alpha,
-            )
+            curr_state, action, next_state, reward, done = self.step(env, curr_state)
 
             # Store state-action transition in memory.
             self.memory.push(
@@ -179,10 +186,11 @@ class DQN:
             )
 
             # Optimize the policy at the current step.
-            self.optimize_policy()
+            if optimize:
+                self.optimize_policy()
 
             # Update target network if necessary.
-            if (step % target_update_freq) == 0:
+            if optimize and (step % target_update_freq) == 0:
                 # print(f"[{step}] target update")
                 self.target_policy_network.load_state_dict(self.policy.policy_net.state_dict())
 
