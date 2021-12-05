@@ -56,7 +56,7 @@ class StockDataEnv(gym.Env):
         The first row must be a header with the same names as above.
         Every subsequent row must contain the desired data.
     """
-    metadata = {'render.modes': [RenderMode.ASCII, RenderMode.CSV]}
+    metadata = {'render.modes': [RenderMode.ASCII, RenderMode.CSV], 'name': 'StockDataEnv'}
 
     # Static list of header column names to use for each observation.
     df_obs_cols = ['Open','High','Low','Close','Volume']
@@ -65,19 +65,18 @@ class StockDataEnv(gym.Env):
         df: DataFrame,
         start_balance: float,
         max_stock: int = 100,
-        # max_steps: int = None,
         start_day: int = None,
+        name: str = None,
     ):
         super().__init__()
+
+        # Set environment name.
+        if name is not None:
+            self.metadata['name'] = name
 
         # Initial reset parameters.
         self._start_day = start_day
         self._start_balance = start_balance
-
-        # if max_steps is None:
-        #     self._max_steps = len(df.index)
-        # else:
-        #     self._max_steps = max_steps
 
         # Preserve the input dataframe.
         self.df = df
@@ -101,6 +100,12 @@ class StockDataEnv(gym.Env):
 
         # Seed the environment.
         self.seed()
+
+
+    @property
+    def name(self) -> str:
+        """The name of the environment."""
+        return self.metadata['name']
 
 
     def seed(self, seed=None):
