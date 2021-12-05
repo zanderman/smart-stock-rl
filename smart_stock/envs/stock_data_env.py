@@ -64,7 +64,7 @@ class StockDataEnv(gym.Env):
     def __init__(self, 
         df: DataFrame,
         start_balance: float,
-        max_stock: int = 100,
+        max_shares: int = 100,
         start_day: int = None,
         name: str = None,
     ):
@@ -82,10 +82,10 @@ class StockDataEnv(gym.Env):
         self.df = df
 
         # Define action space.
-        self.max_stock = max_stock
+        self.max_shares = max_shares
         self.action_space = gym.spaces.Box(
-            low=-max_stock,
-            high=max_stock,
+            low=-max_shares,
+            high=max_shares,
             shape=(1,),
             dtype=np.int64,
         )
