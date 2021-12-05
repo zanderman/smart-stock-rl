@@ -1,6 +1,6 @@
+from __future__ import annotations
 import gym
 import numpy as np
-from typing import Tuple
 from ...mapping.state_feature_mapping import StateFeatureMapping
 
 
@@ -15,7 +15,6 @@ class QSFM:
         alpha: float, 
         epsilon: float,
     ):
-        self.env = env
         self.sfm = sfm
         self.gamma = gamma
         self.alpha = alpha
@@ -75,11 +74,31 @@ class QSFM:
             return np.dot(phi, self.theta[self.action2index(action)])
 
 
-    def step(self, curr_state: np.ndarray) -> Tuple[np.ndarray, float, bool]:
+    def optimize_policy(self,
+        curr_state: np.ndarray,
+        action: int,
+        next_state: np.ndarray,
+        reward: float,
+        ):
+
+        # Weight update.
+        delta = reward + self.gamma * np.max(self.q_value(next_state), axis=0) - self.q_value(curr_state, action)
+
+        # Clip the error to prevent outliers from exploding.
+        delta = np.clip(delta, -1, 1)
+
+        # Update weights.
+        self.theta[action] += self.alpha * delta * self.sfm(curr_state)
+
+
+    def step(self, 
+        env: gym.Env,
+        curr_state: np.ndarray
+        ) -> tuple[np.ndarray, int, np.ndarray, float, bool]:
 
         # Epsilon-greedy action selection.
         if np.random.uniform(0, 1) < self.epsilon:
-            action = self.env.action_space.sample()
+            action = env.action_space.sample()
             action = np.array(action).flatten()[0] # Handle random sampling from 1D Box space.
         else:
             # q = [(self.index2action(ai), ai, self.q_value(curr_state, self.index2action(ai))) for ai in range(self.action_count)]
@@ -100,35 +119,45 @@ class QSFM:
             action = self.index2action(action_index) # Convert index to action value.
 
         # Take selected action and get information from environment.
-        next_state, reward, done, _ = self.env.step(action)
+        next_state, reward, done, _ = env.step(action)
 
-        # Weight update.
-        delta = reward + self.gamma * np.max(self.q_value(next_state), axis=0) - self.q_value(curr_state, action)
+        # # Weight update.
+        # delta = reward + self.gamma * np.max(self.q_value(next_state), axis=0) - self.q_value(curr_state, action)
 
-        # Clip the error to prevent outliers from exploding.
-        delta = np.clip(delta, -1, 1)
+        # # Clip the error to prevent outliers from exploding.
+        # delta = np.clip(delta, -1, 1)
 
-        # Update weights.
-        self.theta[action] += self.alpha * delta * self.sfm(curr_state)
+        # # Update weights.
+        # self.theta[action] += self.alpha * delta * self.sfm(curr_state)
 
-        return next_state, reward, done
+        return curr_state, action, next_state, reward, done
 
 
-    def run_episode(self, max_steps: int = None, render: bool = False, render_mode: str = None):
+    def run_episode(self,
+        env: gym.Env,  
+        max_steps: int = None, 
+        render: bool = False, 
+        render_mode: str = None, 
+        optimize: bool = True,
+        ):
 
         # Reset the environment and get starting state.
-        curr_state = self.env.reset()
+        curr_state = env.reset()
 
         total_reward = 0
         step = 0
         while True:
 
             # Render the environment if requested.
-            if render: self.env.render(mode=render_mode)
+            if render: env.render(mode=render_mode)
 
             # Step the algorithm through the current state and retreive
             # the Q-matrix, next state, and the termination flag.
-            next_state, reward, done = self.step(curr_state)
+            curr_state, action, next_state, reward, done = self.step(env, curr_state)
+
+            # Optimize the policy at the current step.
+            if optimize:
+                self.optimize_policy(curr_state, action, next_state, reward)
 
             # Accumulate rewards for the current episode.
             total_reward += reward
