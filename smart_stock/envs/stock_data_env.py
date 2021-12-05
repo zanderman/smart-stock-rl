@@ -75,14 +75,14 @@ class StockDataEnv(gym.Env):
             self.metadata['name'] = name
 
         # Initial reset parameters.
-        self._start_day = start_day
-        self._start_balance = start_balance
+        self.start_day = start_day
+        self.start_balance = start_balance
 
         # Preserve the input dataframe.
         self.df = df
 
         # Define action space.
-        self._max_stock = max_stock
+        self.max_stock = max_stock
         self.action_space = gym.spaces.Box(
             low=-max_stock,
             high=max_stock,
@@ -223,19 +223,19 @@ class StockDataEnv(gym.Env):
 
 
     def reset(self):
-        self.balance = self._start_balance # Current account balance (i.e., spending money).
+        self.balance = self.start_balance # Current account balance (i.e., spending money).
         self.shares = 0 # Current number of shares.
         self.cost_basis = 0 # Original value of asset for tax purposes.
         self.net_worth = 0
 
         # If no start day was given, then randomly initialize the step to be a point within the data frame.
-        if self._start_day is None:
+        if self.start_day is None:
             self.current_step = self.np_random.randint(
                 low=0,
                 high=len(self.df.index)-2,
                 )
         else:
-            self.current_step = self._start_day
+            self.current_step = self.start_day
 
         # Get initial observation and return.
         obs = self._get_observation()
