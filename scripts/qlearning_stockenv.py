@@ -73,7 +73,7 @@ def main():
 
     # Set tweakable parameters.
     gamma = 0.9 # Discount factor (should be in (0,1)).
-    alpha = 0.0001 # Step size.
+    alpha = 0.01 # 0.0001 # Step size.
     epsilon = 0.2 # Epsilon-greedy action selection (should be in (0,1)).
     max_episodes = 50 # 1000 # Upper-limit on number of possible episodes.
     max_steps = 50
