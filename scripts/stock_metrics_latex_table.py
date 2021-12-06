@@ -5,7 +5,8 @@ import os
 import pandas as pd
 import smart_stock as ss
 
-stocks = ['aapl', 'nvda', 'dis', 'ko', 'pg']
+# stocks = ['aapl', 'nvda', 'dis', 'ko', 'pg']
+stocks = ['aapl', 'goog']
 stocks_upper = list(s.upper() for s in stocks)
 
 outdir = os.path.join(os.path.dirname(__file__), '..', 'latex', 'tables')
